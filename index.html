@@ -344,15 +344,41 @@
     </div>
 
     <script>
-        // Form handling (placeholder for now)
-        document.getElementById('emailForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('emailInput').value;
-            
-            // For now, just show an alert - tomorrow we'll replace with Mailchimp
-            alert('Thank you! We\'ll notify ' + email + ' when Compliance Quickly launches.');
-            document.getElementById('emailInput').value = '';
+// Form handling - submit to serverless function
+document.getElementById('emailForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = document.getElementById('emailInput').value;
+    const submitBtn = document.querySelector('.submit-btn');
+    
+    // Disable button and show loading state
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+    
+    try {
+        const response = await fetch('/api/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email: email })
         });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            alert(data.message);
+            document.getElementById('emailInput').value = '';
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        alert('Something went wrong. Please try again.');
+    } finally {
+        // Re-enable button
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Get Early Access';
+    }
+});
 
         // Add smooth scroll behavior for better UX
         document.documentElement.style.scrollBehavior = 'smooth';
