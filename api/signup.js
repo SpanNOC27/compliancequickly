@@ -12,8 +12,29 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Valid email required' });
     }
 
-    // For now, just log the email (we'll add email sending next)
-    console.log('New signup:', email);
+    // Send notification email using Resend
+    const resendResponse = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'signups@compliancequickly.com',
+        to: 'sales@compliancequickly.com',
+        subject: 'New Compliance Quickly Signup!',
+        html: `
+          <h2>New Email Signup</h2>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+          <p>Someone is interested in Compliance Quickly!</p>
+        `
+      })
+    });
+
+    if (!resendResponse.ok) {
+      throw new Error('Failed to send notification email');
+    }
     
     // Send success response
     res.status(200).json({ 
